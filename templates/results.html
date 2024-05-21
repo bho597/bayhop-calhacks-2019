@@ -1,0 +1,116 @@
+<html lang="en">
+
+<head>
+    <title>Bay Hop</title>
+    <!-- <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+    <!-- <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet"> -->
+    <!-- <link href="../static/styles/home.css" type="text/css" rel="stylesheet"> -->
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static', filename='styles/results.css') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+	<div id="header" class="bay-hop">
+		<img src ="/static/images/Logo.png" height="90" alt="BayHop Logo">
+		<h2>Bay Area Travel Made Fast and Simple</h2>
+	</div>
+
+	<div id="content" class="bay-hop">
+
+		<div id="results" class="bay-hop">
+
+			<div id="addresses" class="bay-hop">
+					<form class="form-signin">
+						<input type='text' class="form-control" value="{{results.start}}"></input> 
+						<br>
+						<input type='text' class="form-control" value="{{results.end}}"></input>
+					</form>
+				</div>
+
+			<div id="results-wrapper">
+
+				<div id="transportation-modes" class="bay-hop"></div>
+				<div id="directions" class="bay-hop" style="display:inline;">
+					{% if route_info[0][0][0] == 0 %}
+						<h3>{{route_info[0][0][1]}} Minutes ({{route_info[0][1]}} miles) 
+							<img src ="/static/images/Walk.png" background-color: rgba(142, 141, 171, 0.4); height="30" align="right" alt="BayHop Logo">
+							<img src ="/static/images/Bike.png" background-color: rgba(142, 141, 171, 0.4); height="30" align="right" alt="BayHop Logo">
+							<img src ="/static/images/Car.png" background-color: rgba(142, 141, 171, 0.4); height="30" align="right" alt="BayHop Logo">
+							<img src ="/static/images/Uber.png" background-color: rgba(142, 141, 171, 0.4); height="30" align="right" alt="BayHop Logo">
+							<img src ="/static/images/Lyft.png" background-color: rgba(142, 141, 171, 0.4); height="30" align="right" alt="BayHop Logo">
+							<img src ="/static/images/Bart.png" background-color: rgba(142, 141, 171, 0.4); height="30" align="right" alt="BayHop Logo"></h3>
+					{% elif route_info[0][0][1] == 0 %}
+						<h3>{{route_info[0][0][0]}} Hours ({{route_info[0][1]}} miles) </h3>
+					{% else %}
+						<h3>{{route_info[0][0][0]}} Hours and {{route_info[0][0][1]}} Minutes ({{route_info[0][1]}} miles) 
+							<img src ="/static/images/Walk.png" height="28" align="left" alt="BayHop Logo" style="PADDING-LEFT: 15px;"></h3>
+					{% endif %}
+					<br>
+					{% for node in route_info[1] %}
+						{% if node[2] == 'W' %}
+							<h4><img src ="/static/images/Walk.png" height="28" align="left" alt="BayHop Logo" style="PADDING-RIGHT: 15px;">{{node[0]}} -> {{node[1]}}</h4>
+							<!-- <br> -->
+						{% elif node[2] == 'BK' %}
+							<h4><img src ="/static/images/Bike.png" height="28" align="left" alt="BayHop Logo" style="PADDING-RIGHT: 15px;">{{node[0]}} -> {{node[1]}}</h4>
+							<!-- <br> -->
+						{% elif node[2] == 'B' %}
+							<h4><img src ="/static/images/Bart.png" height="28" align="left" alt="BayHop Logo" style="PADDING-RIGHT: 15px;">{{node[0]}} -> {{node[1]}}</h4>
+							<!-- <br> -->
+						{% elif node[2] == 'C' %}
+							<h4><img src ="/static/images/Car.png" height="28" align="left" alt="BayHop Logo" style="PADDING-RIGHT: 15px;">{{node[0]}} -> {{node[1]}}</h4>
+							<!-- <br> -->
+						{% elif node[2] == 'U' %}
+							<h4><img src ="/static/images/Uber.png" height="28" align="left" alt="BayHop Logo" style="PADDING-RIGHT: 15px;">{{node[0]}} -> {{node[1]}}</h4>
+							<!-- <br> -->
+						{% endif %}
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+
+		<div id="map" class="bay-hop"></div>
+
+	</div>
+<!-- 
+	<div id="map" class="bay-hop"></div> -->
+
+
+	<script>
+		// Initialize and add the map
+		function initMap() {
+			var startLat = {{ results.startLat }};
+			var startLng = {{ results.startLng }};
+			var endLat = {{ results.endLat }};
+			var endLng = {{ results.endLng }};
+			var centerLat = Math.min(startLat, endLat) + Math.abs(startLat - endLat)/2;
+			var centerLng = Math.min(startLng, endLng) + Math.abs(startLng - endLng)/2;
+
+		  	// The location of Berkeley
+			var start = {lat: startLat, lng: startLng};
+			var dest = {lat: endLat, lng: endLng};
+			var center = {lat: centerLat, lng: centerLng};
+
+			// The map, centered at Berkeley
+			var map = new google.maps.Map(
+			  document.getElementById('map'), {zoom: 17, center: center});
+
+			// The marker, positioned at Berkeley
+			var smarker = new google.maps.Marker({position: start, map: map, label: 'A'});
+			var dmarker = new google.maps.Marker({position: dest, map: map, label: 'B'});
+
+			var bounds = new google.maps.LatLngBounds();
+			bounds.extend(smarker.getPosition());
+			bounds.extend(dmarker.getPosition());
+
+			map.fitBounds(bounds);
+		}    
+	</script>
+
+     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC5_ShaibPjbrctDcI8vXgDUtI3ua-E814&libraries=places&callback=initMap"
+        async defer>
+    </script>
+
+</body>	
+</html>
